@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sleep Apnea Detection - Sign Up</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #ffafbd, #ffc3a0);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .icon {
+      width: 100px;
+      height: auto;
+      margin-bottom: 20px;
+    }
+
+    .form-container {
+      width: 400px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    form h2 {
+      color: #333;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    form input {
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    form button {
+      padding: 12px;
+      background: #ff7e5f;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    form button:hover {
+      background: #ff6f5e;
+    }
+
+    form p a {
+      color: #ff7e5f;
+      text-decoration: none;
+    }
+
+    form p a:hover {
+      text-decoration: underline;
+    }
+
+    form a {
+      margin-top: 10px;
+      color: #007bff;
+      text-align: center;
+    }
+
+    form a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="https://png.pngtree.com/png-vector/20240127/ourmid/pngtree-man-dozing-on-back-in-bed-snores-and-has-problems-during-png-image_11554999.png" alt="Sleep Apnea Icon" class="icon">
+    <div class="form-container">
+      <form id="signup-form" class="form active">
+        <h2>Sign Up</h2>
+        <input type="text" id="signup-name" placeholder="Full Name" required>
+        <input type="email" id="signup-email" placeholder="Email" required>
+        <input type="password" id="signup-password" placeholder="Password" required>
+        <button type="submit">Sign Up</button>
+        <p>Already have an account? <a href="login.html" id="login-link">Login</a></p>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

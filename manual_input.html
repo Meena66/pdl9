@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manual Input</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f8ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      max-width: 500px;
+    }
+    .icon {
+      width: 100px;
+    }
+    h2 {
+      color: #333;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="https://png.pngtree.com/png-vector/20240127/ourmid/pngtree-man-dozing-on-back-in-bed-snores-and-has-problems-during-png-image_11554999.png" alt="Manual Input Icon" class="icon">
+    <h2>Manual Health Data Input</h2>
+    <form id="manual-input-form">
+      <input type="text" placeholder="Name" required>
+      <input type="number" placeholder="Heart Rate (bpm)" required>
+      <input type="number" placeholder="SpO2 (%)" required>
+      <select>
+        <option value="REM">Sleep Cycle: REM</option>
+        <option value="Light">Sleep Cycle: Light</option>
+        <option value="Deep">Sleep Cycle: Deep</option>
+      </select>
+      <input type="text" placeholder="Symptoms or Voice Analysis">
+      <button type="submit">Submit Data</button>
+    </form>
+  </div>
+</body>
+<script>
+  document.getElementById('manual-input-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    alert("Data Submitted Successfully!");
+    // Add logic to handle data submission and analysis
+  });
+</script>
+</html>
