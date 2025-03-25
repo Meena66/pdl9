@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Chatbot</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, #ffecd2, #fcb69f);
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            background-color: #333;
+            overflow: hidden;
+        }
+
+        nav ul li {
+            float: left;
+        }
+
+        nav ul li a {
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        nav ul li a:hover {
+            background-color: #575757;
+        }
+
+        main {
+            padding: 20px;
+            background: #fff5e6;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+            text-align: center; /* Center the content */
+        }
+
+        h1 {
+            color: #ff6f61;
+            text-align: center;
+        }
+
+        .chat-box {
+            border: 2px solid #ff6f61;
+            padding: 20px;
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+            background: #fff3e0;
+            border-radius: 10px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            color: #fff;
+            background: #ff6f61;
+            padding: 10px 15px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            max-width: 60%;
+            word-wrap: break-word;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            color: #fff;
+            background: #ffcc80;
+            padding: 10px 15px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            max-width: 60%;
+            word-wrap: break-word;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin: 10px auto;
+            border: 1px solid #ff6f61;
+            border-radius: 5px;
+            display: block;
+        }
+
+        button {
+            background-color: #0d1cf0;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: block;
+            margin: 0 auto;
+        }
+
+        button:hover {
+            background-color: #ff3d00;
+        }
+
+        .icon {
+            display: block;
+            margin: 0 auto 20px auto; /* Center the image and add space below */
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById("userInput").addEventListener("keydown", function(event) {
+                if (event.key === "Enter") {
+                    sendMessage();
+                }
+            });
+        });
+
+        function sendMessage() {
+            var input = document.getElementById("userInput").value;
+            if (input.trim() === "") return;
+
+            var chatBox = document.getElementById("chatBox");
+            var userMessage = document.createElement("div");
+            userMessage.className = "user-message";
+            userMessage.textContent = input;
+            chatBox.appendChild(userMessage);
+
+            // Simulate bot response
+            setTimeout(function() {
+                var botMessage = document.createElement("div");
+                botMessage.className = "bot-message";
+                botMessage.textContent = getBotResponse(input);
+                chatBox.appendChild(botMessage);
+                chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom
+            }, 1000);
+
+            document.getElementById("userInput").value = "";
+        }
+
+        function getBotResponse(input) {
+            input = input.toLowerCase();
+            const responses = {
+                "sleep apnea": "Sleep apnea is a serious sleep disorder in which breathing repeatedly stops and starts. If you think you might have sleep apnea, consult a doctor.",
+                "symptoms of sleep apnea": "Common symptoms of sleep apnea include loud snoring, gasping for air during sleep, and daytime sleepiness.",
+                "diagnosis of sleep apnea": "Sleep apnea is usually diagnosed through a sleep study, which may involve overnight monitoring at a sleep center or at home.",
+                "treatment for sleep apnea": "Treatments for sleep apnea include lifestyle changes, CPAP machines, and in some cases, surgery.",
+                "generate report": "To generate your health report, go to the dashboard and click on the 'Generate Report' button.",
+                "recommendations": "Based on your health data, here are some recommendations: eat a balanced diet, exercise regularly, and get enough sleep.",
+                "reset password": "To reset your password, go to the settings page and click on 'Reset Password'.",
+                "export data": "To export your data, go to the dashboard and click on the 'Export Data' button.",
+                "health tips": "Here are some health tips: stay hydrated, eat a balanced diet, exercise regularly, and get enough sleep.",
+                "common treatments for sleep apnea": "Common treatments for sleep apnea include CPAP therapy, lifestyle changes, and sometimes surgery.",
+                "sleep hygiene": "Good sleep hygiene includes maintaining a regular sleep schedule, avoiding caffeine before bedtime, and creating a comfortable sleep environment.",
+                "contact support": "To contact support, please visit our support page or call our helpline.",
+                "book appointment": "To book an appointment, go to the appointments section and select a suitable date and time.",
+                "cancel appointment": "To cancel your appointment, go to the appointments section and click on 'Cancel Appointment'.",
+                "update profile": "To update your profile, go to the profile section and click on 'Edit Profile'.",
+                "find doctor": "To find a doctor, go to the 'Find a Doctor' section and search by specialty or location.",
+                "download app": "To download our app, visit the app store on your device and search for 'HealthApp'.",
+                "feedback": "We value your feedback. Please go to the feedback section and submit your comments.",
+                "emergency contact": "In case of an emergency, please call 911 or go to the nearest emergency room.",
+                "insurance info": "To update your insurance information, go to the insurance section and click on 'Update Insurance Info'.",
+                "check symptoms": "To check your symptoms, please provide more details about what you're experiencing.",
+                "medication info": "For information about your medication, please refer to the medication section.",
+                "exercise tips": "Regular exercise is important for maintaining good health. Aim for at least 30 minutes of moderate exercise most days of the week.",
+                "diet advice": "A balanced diet includes a variety of foods from all food groups. Make sure to eat plenty of fruits, vegetables, whole grains, and lean proteins.",
+                "mental health": "Mental health is just as important as physical health. If you're feeling stressed or anxious, consider talking to a mental health professional.",
+                "logout": "To log out, go to the settings section and click on 'Log Out'.",
+                "privacy policy": "To view our privacy policy, go to the privacy section on our website.",
+                "terms of service": "To view our terms of service, go to the terms section on our website.",
+                "view profile": "To view your profile, go to the profile section.",
+                "update settings": "To update your settings, go to the settings section.",
+                "change password": "To change your password, go to the settings section and click on 'Change Password'.",
+                "view appointments": "To view your appointments, go to the appointments section.",
+                "delete account": "To delete your account, please contact support."
+            };
+
+            // Handle wrong inputs gracefully
+            const unknownResponse = "I'm sorry, I didn't understand that. Can you please rephrase your question or ask something else?";
+            return responses[input] || generateQuestion(input);
+        }
+
+        function generateQuestion(input) {
+            const questions = [
+                "Can you provide more details about your symptoms?",
+                "Have you been diagnosed with sleep apnea before?",
+                "Are you currently using any treatments for sleep apnea?",
+                "How often do you experience symptoms?",
+                "Do you have any other health conditions?",
+                "Is there anything else you would like to know?",
+                "Do you need help with something specific?",
+                "Can you describe your problem in more detail?",
+                "What can I assist you with today?",
+                "Have you tried any remedies for your condition?",
+                "What kind of assistance do you need?",
+                "Can you specify what information you're looking for?",
+                "How can I help you today?"
+            ];
+
+            return questions[Math.floor(Math.random() * questions.length)];
+        }
+    </script>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="smartwatch_integration.html">Smartwatch Integration</a></li>
+            <li><a href="ecg.html">ECG</a></li>
+            <li><a href="manual_input.html">Manual Input</a></li>
+            <li><a href="chatbot.html">Chatbot</a></li>
+        </ul>
+    </nav>
+    <main>
+        <h1>Interactive Chatbot</h1>
+        <img src="https://png.pngtree.com/png-vector/20240127/ourmid/pngtree-man-dozing-on-back-in-bed-snores-and-has-problems-during-png-image_11554999.png" alt="Sleep Apnea Icon" class="icon">
+        <div id="chatBox" class="chat-box"></div>
+        <input type="text" id="userInput" placeholder="Type your message here...">
+        <button onclick="sendMessage()">Send</button>
+    </main>
+</body>
+</html>

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sleep Apnea Detection</title>
+  <!-- TensorFlow.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.20.0/dist/tf.min.js"></script>
+  <!-- Meyda for audio feature extraction -->
+  <script src="https://cdn.jsdelivr.net/npm/meyda/dist/web/meyda.min.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary-color: #2a5298;
+      --secondary-color: #1e3c72;
+      --success-color: #28a745;
+      --warning-color: #ffcc00;
+      --danger-color: #ff4d4d;
+      --bg-gradient: linear-gradient(135deg, #1e3c72, #2a5298);
+    }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: var(--bg-gradient);
+      color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+      transition: background 0.5s ease-in-out;
+    }
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      background: #ffffff;
+      color: #333;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 1s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    h2 {
+      color: var(--primary-color);
+      margin-bottom: 20px;
+      font-size: 32px;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin: 15px 0 5px;
+      text-align: left;
+    }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+    button {
+      background-color: var(--primary-color);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: var(--secondary-color);
+    }
+    canvas {
+      margin: 20px 0;
+      max-width: 100%;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
+      padding: 15px;
+      border-radius: 6px;
+      transition: background 0.5s ease, color 0.5s ease;
+    }
+    .high-risk { background: var(--danger-color); color: #fff; }
+    .moderate-risk { background: var(--warning-color); color: #333; }
+    .low-risk { background: var(--success-color); color: #fff; }
+    .audio-section {
+      margin-top: 25px;
+      border-top: 1px solid #ddd;
+      padding-top: 20px;
+      animation: slideIn 0.8s ease;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Sleep Apnea Detection</h2>
+    <img src="https://png.pngtree.com/png-vector/20240127/ourmid/pngtree-man-dozing-on-back-in-bed-snores-and-has-problems-during-png-image_11554999.png" alt="Sleep Apnea Icon" class="icon">
+
+    <!-- Health Data Inputs -->
+    <label>Heart Rate (BPM):</label>
+    <input type="number" id="heart_rate" placeholder="e.g., 72" required>
+    
+    <label>SpO₂ Level (%):</label>
+    <input type="number" id="spo2" placeholder="e.g., 96" required>
+    
+    <label>Respiratory Rate (breaths/min):</label>
+    <input type="number" id="respiratory_rate" placeholder="e.g., 16" required>
+    
+    <!-- Audio Input for AI-Based Snoring Analysis -->
+    <div class="audio-section">
+      <label>Upload Breathing Audio (MP3):</label>
+      <input type="file" id="audio_input" accept="audio/mp3">
+      <button onclick="analyzeAudio()">Analyze Audio</button>
+    </div>
+    
+    <button onclick="processData()">Analyze Health Data</button>
+    <button onclick="clearData()">Clear Data</button>
+    <button onclick="downloadData()">Download Data</button>
+    
+    <h3>Real-Time Health Data</h3>
+    <canvas id="healthChart"></canvas>
+    
+    <div id="result" class="result"></div>
+  </div>
+  
+  <script>
+    // Chart and Data Variables
+    let labels = [];
+    let heartRateData = [];
+    let spo2Data = [];
+    let respiratoryRateData = [];
+    const maxDataPoints = 30;
+    
+    const ctx = document.getElementById('healthChart').getContext('2d');
+    const healthChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: 'Heart Rate (BPM)', data: heartRateData, borderColor: 'red', borderWidth: 2 },
+          { label: 'SpO₂ Level (%)', data: spo2Data, borderColor: 'blue', borderWidth: 2 },
+          { label: 'Respiratory Rate', data: respiratoryRateData, borderColor: 'green', borderWidth: 2 }
+        ]
+      }
+    });
+    
+    // Load the TensorFlow.js model for audio analysis
+    let audioModel;
+    async function loadAudioModel() {
+      // Replace with your actual TensorFlow.js model URL
+      audioModel = await tf.loadLayersModel('https://example.com/tfjs_model/model.json');
+      console.log("Audio model loaded.");
+    }
+    window.onload = loadAudioModel;
+    
+    // Process Health Data
+    function processData() {
+      const heartRate = document.getElementById('heart_rate').value;
+      const spo2 = document.getElementById('spo2').value;
+      const respiratoryRate = document.getElementById('respiratory_rate').value;
+      
+      if (!heartRate || !spo2 || !respiratoryRate) {
+        alert("Please enter valid health data.");
+        return;
+      }
+      
+      addDataToChart(heartRate, spo2, respiratoryRate);
+      let result = analyzeApneaRisk(heartRate, spo2, respiratoryRate);
+      displayResult(result);
+      saveDataToLocal(heartRate, spo2, respiratoryRate);
+    }
+    
+    function addDataToChart(hr, sp, rr) {
+      const timeLabel = new Date().toLocaleTimeString();
+      labels.push(timeLabel);
+      if (labels.length > maxDataPoints) labels.shift();
+      
+      heartRateData.push(hr);
+      if (heartRateData.length > maxDataPoints) heartRateData.shift();
+      
+      spo2Data.push(sp);
+      if (spo2Data.length > maxDataPoints) spo2Data.shift();
+      
+      respiratoryRateData.push(rr);
+      if (respiratoryRateData.length > maxDataPoints) respiratoryRateData.shift();
+      
+      healthChart.update();
+    }
+    
+    // Basic Apnea Risk Analysis
+    function analyzeApneaRisk(heartRate, spo2, respiratoryRate) {
+      let hr = parseInt(heartRate);
+      let sp = parseInt(spo2);
+      let rr = parseInt(respiratoryRate);
+      
+      let risk = "";
+      if (sp < 90 || hr > 120 || rr > 22) {
+        risk = "High Risk: Immediate medical consultation is recommended!";
+      } else if (sp < 94 || hr > 100 || rr > 18) {
+        risk = "Moderate Risk: Please monitor your condition and consider consulting a doctor.";
+      } else {
+        risk = "Low Risk: Your current readings are within normal ranges.";
+      }
+      return risk;
+    }
+    
+    function displayResult(result) {
+      const resultDiv = document.getElementById('result');
+      resultDiv.textContent = result;
+      if (result.includes("High Risk")) {
+        resultDiv.className = "result high-risk";
+        playAlertSound();
+      } else if (result.includes("Moderate Risk")) {
+        resultDiv.className = "result moderate-risk";
+      } else {
+        resultDiv.className = "result low-risk";
+      }
+    }
+    
+    function playAlertSound() {
+      let audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
+      audio.play();
+    }
+    
+    // Improved AI-Based Audio Analysis for Snoring Detection
+    async function analyzeAudio() {
+      const audioFile = document.getElementById('audio_input').files[0];
+      if (!audioFile) {
+        alert("Please upload an audio file.");
+        return;
+      }
+      
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const reader = new FileReader();
+      
+      reader.onload = async (event) => {
+        try {
+          // Attempt to decode the audio
+          const audioBuffer = await audioContext.decodeAudioData(event.target.result);
+          console.log("Audio Duration (sec):", audioBuffer.duration);
+          
+          // Extract the channel data
+          const audioData = audioBuffer.getChannelData(0);
+          console.log("audioData length:", audioData.length);
+          
+          // Optionally slice the audio to a known size for consistent MFCC
+          const bufferSize = 2048;
+          const sampleBuffer = audioData.slice(0, Math.min(bufferSize, audioData.length));
+          
+          // Extract MFCC features using Meyda with explicit options
+          const mfccFeatures = Meyda.extract(['mfcc'], sampleBuffer, {
+            bufferSize: sampleBuffer.length,
+            sampleRate: audioBuffer.sampleRate
+          });
+          console.log("Extracted MFCC Features:", mfccFeatures);
+          
+          if (!mfccFeatures || !mfccFeatures.mfcc) {
+            console.error("MFCC extraction returned invalid data:", mfccFeatures);
+            alert("Failed to extract MFCC features. See console for details.");
+            return;
+          }
+          
+          // Reshape the tensor as required by your model
+          const inputTensor = tf.tensor(mfccFeatures.mfcc).reshape([1, mfccFeatures.mfcc.length]);
+          console.log("Input Tensor Shape:", inputTensor.shape);
+          
+          // Run the model prediction
+          const prediction = audioModel.predict(inputTensor);
+          const riskProbability = prediction.dataSync()[0]; // Assuming output is a single probability
+          let audioRisk = riskProbability > 0.5 ? "High Snoring Risk Detected" : "Low Snoring Risk";
+          
+          let currentResult = document.getElementById('result').textContent;
+          document.getElementById('result').textContent = currentResult + " | Audio Analysis: " + audioRisk;
+        } catch (error) {
+          console.error("Error during audio analysis:", error);
+          alert("An error occurred during audio analysis. Check console for details.\n\n" +
+                "Possible causes:\n" +
+                "- Invalid or corrupted MP3 file\n" +
+                "- Browser cannot decode this audio format\n" +
+                "- Incompatible sample rate or environment");
+        }
+      };
+      
+      // Start reading the file as an ArrayBuffer
+      reader.readAsArrayBuffer(audioFile);
+    }
+    
+    function analyzeApneaRisk(heartRate, spo2, respiratoryRate) {
+      let hr = parseInt(heartRate);
+      let sp = parseInt(spo2);
+      let rr = parseInt(respiratoryRate);
+
+      let risk = "";
+      if (sp < 90 || hr > 120 || rr > 22) {
+        risk = "⚠️ High Risk: Low SpO₂ level detected! Immediate action required! Contact a healthcare professional.";
+        playAlertSound();
+      } else if (sp < 94 || hr > 100 || rr > 18) {
+        risk = "⚠️ Moderate Risk: Please monitor your condition and consider consulting a doctor.";
+      } else {
+        risk = "✅ Low Risk: Your current readings are within normal ranges.";
+      }
+      return risk;
+    }
+    // Clear Data and Chart
+    function clearData() {
+      labels = [];
+      heartRateData = [];
+      spo2Data = [];
+      respiratoryRateData = [];
+      healthChart.data.labels = [];
+      healthChart.data.datasets.forEach(dataset => dataset.data = []);
+      healthChart.update();
+      document.getElementById('result').textContent = "";
+    }
+    
+    // Save Data Locally in localStorage
+    function saveDataToLocal(heartRate, spo2, respiratoryRate) {
+      let data = {
+        time: new Date().toLocaleString(),
+        heartRate: heartRate,
+        spo2: spo2,
+        respiratoryRate: respiratoryRate
+      };
+      let existingData = JSON.parse(localStorage.getItem('health_data')) || [];
+      existingData.push(data);
+      localStorage.setItem('health_data', JSON.stringify(existingData));
+    }
+    
+    // Download Health Data as CSV to your PC
+    function downloadData() {
+      let csv = 'Time,Heart Rate (BPM),SpO₂ Level (%),Respiratory Rate\n';
+      for (let i = 0; i < labels.length; i++) {
+        csv += `${labels[i]},${heartRateData[i]},${spo2Data[i]},${respiratoryRateData[i]}\n`;
+      }
+      let hiddenElement = document.createElement('a');
+      hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+      hiddenElement.target = '_blank';
+      hiddenElement.download = 'health_data.csv';
+      hiddenElement.click();
+    }
+  </script>
+</body>
+</html>
